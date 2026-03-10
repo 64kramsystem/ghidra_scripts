@@ -1,9 +1,11 @@
 #@category Malware/DOS
 
+args = begin; getScriptArgs; rescue NameError; []; end
+
 # PARAMS ###########################################################################################
 
-name       = getScriptArgs[0] || "BPB"
-start_addr = getScriptArgs[1] || "0f80:0402"
+name       = args[0] || "BPB"
+start_addr = args[1] || "0f80:0402"
 
 ####################################################################################################
 

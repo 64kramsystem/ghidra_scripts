@@ -1,46 +1,48 @@
 #@category Malware/DOS
 
+# Useful when Ghidra doesn't know the actual value of a segment register and creates references in
+# the wrong segment.
+
+args = begin; getScriptArgs; rescue NameError; []; end
+
 # PARAMS ###########################################################################################
 
-from_segment   = getScriptArgs[0] || "0000"
-to_segment     = getScriptArgs[1] || "07c0"
-start_offset   = getScriptArgs[2] || "8000"
-end_offset     = getScriptArgs[3] || "81ff"
+from_address_start = args[0] || "0000:8000"
+from_address_end   = args[1] || "0000:81ff"
+to_address         = args[2] || "07c0:8000"
+commit             = true
 
 ####################################################################################################
 
-tx_id = currentProgram.start_transaction("Remap #{from_segment}:#{start_offset}-#{end_offset} references to #{to_segment}")
+java_import 'ghidra.program.model.symbol.SourceType'
+
+tx_id = currentProgram.start_transaction("Remap references")
 success = false
 
 begin
   ref_manager = currentProgram.reference_manager
-  start_addr  = toAddr("#{from_segment}:#{start_offset}")
-  end_addr    = toAddr("#{from_segment}:#{end_offset}")
+  start_addr  = toAddr(from_address_start)
+  end_addr    = toAddr(from_address_end)
+  to_addr     = toAddr(to_address)
 
   addr = start_addr
   while addr <= end_addr
     refs = ref_manager.get_references_to(addr).to_a   # snapshot to avoid iterator mutation
     unless refs.empty?
-      # Compute the equivalent address in the virus segment (07c0)
-      target_addr = toAddr("#{to_segment}:#{"%04x" % addr.segment_offset}")
+      target_addr = to_addr.add(addr.offset - start_addr.offset)
       refs.each do |ref|
-        # Add new reference pointing to the correct segment
-        ref_manager.add_memory_reference(
-          ref.from_address,
-          target_addr,
-          ref.reference_type,   # preserve original ref type (read/write/data)
-          SourceType::USER_DEFINED,
-          ref.operand_index     # preserve which operand the ref belongs to
-        )
+        from = ref.from_address
+        type = ref.reference_type
+        op   = ref.operand_index
         ref_manager.delete(ref)
+        ref_manager.add_memory_reference(from, target_addr, type, SourceType::USER_DEFINED, op)
       end
       puts "Remapped #{addr} -> #{target_addr} (#{refs.size} ref#{refs.size == 1 ? '' : 's'})"
     end
-    addr = addr.next   # advance one byte at a time
+    addr = addr.add(1)
   end
 
-  success = true
+  success = commit
 ensure
-  # Rollback on exception
   currentProgram.end_transaction(tx_id, success)
 end

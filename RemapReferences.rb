@@ -1,21 +1,28 @@
 #@category Malware/DOS
 
-NEW_SEGMENT = "07c0"
+# PARAMS ###########################################################################################
 
-tx_id = currentProgram.start_transaction("Remap 0000:8xxx references")
+from_segment   = getScriptArgs[0] || "0000"
+to_segment     = getScriptArgs[1] || "07c0"
+start_offset   = getScriptArgs[2] || "8000"
+end_offset     = getScriptArgs[3] || "81ff"
+
+####################################################################################################
+
+tx_id = currentProgram.start_transaction("Remap #{from_segment}:#{start_offset}-#{end_offset} references to #{to_segment}")
 success = false
 
 begin
   ref_manager = currentProgram.reference_manager
-  start_addr  = toAddr("0000:8000")
-  end_addr    = toAddr("0000:81ff")
+  start_addr  = toAddr("#{from_segment}:#{start_offset}")
+  end_addr    = toAddr("#{from_segment}:#{end_offset}")
 
   addr = start_addr
   while addr <= end_addr
     refs = ref_manager.get_references_to(addr).to_a   # snapshot to avoid iterator mutation
     unless refs.empty?
       # Compute the equivalent address in the virus segment (07c0)
-      target_addr = toAddr("#{NEW_SEGMENT}:#{"%04x" % addr.segment_offset}")
+      target_addr = toAddr("#{to_segment}:#{"%04x" % addr.segment_offset}")
       refs.each do |ref|
         # Add new reference pointing to the correct segment
         ref_manager.add_memory_reference(

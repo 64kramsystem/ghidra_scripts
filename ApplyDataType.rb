@@ -1,11 +1,9 @@
 #@category Malware/DOS
 
-args = begin; getScriptArgs; rescue NameError; []; end
-
 # PARAMS ###########################################################################################
 
-name       = args[0] || "BPB"
-start_addr = args[1] || "0f80:0402"
+name       = $current_api.state.getEnvironmentVar("APPLY_DT_NAME") || "BPB"
+start_addr = $current_api.state.getEnvironmentVar("APPLY_DT_ADDR") || "0f80:0402"
 
 ####################################################################################################
 
@@ -21,7 +19,7 @@ begin
   currentProgram.listing.clearCodeUnits(start_addr, start_addr.add(dt.length - 1), false)
   currentProgram.listing.createData(start_addr, dt)
 
-  puts "Applied BPB structure at #{start_addr}"
+  puts "Applied #{name} structure at #{start_addr}"
 
   success = true
 ensure

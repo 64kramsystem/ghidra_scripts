@@ -1,5 +1,12 @@
 #@category Malware/DOS
 
+java_import 'ghidra.program.model.data.StructureDataType'
+java_import 'ghidra.program.model.data.ByteDataType'
+java_import 'ghidra.program.model.data.WordDataType'
+java_import 'ghidra.program.model.data.ArrayDataType'
+java_import 'ghidra.program.model.data.CharDataType'
+java_import 'ghidra.program.model.data.DataTypeConflictHandler'
+
 NAME = "BPB"
 FIELDS = [
   [ArrayDataType.new(CharDataType::dataType, 8, 1), "oem_name",           "OEM identifier"],
@@ -17,13 +24,6 @@ FIELDS = [
 ]
 START_ADDR = toAddr("07c0:0003")
 
-java_import 'ghidra.program.model.data.StructureDataType'
-java_import 'ghidra.program.model.data.ByteDataType'
-java_import 'ghidra.program.model.data.WordDataType'
-java_import 'ghidra.program.model.data.ArrayDataType'
-java_import 'ghidra.program.model.data.CharDataType'
-java_import 'ghidra.program.model.data.DataTypeConflictHandler'
-
 tx_id = currentProgram.startTransaction("Create and apply data type")
 success = false
 
@@ -36,11 +36,13 @@ begin
   end
 
   # Register the type
-  dtm.addDataType(struct, nil)
+  dtm.addDataType(struct, DataTypeConflictHandler::DEFAULT_HANDLER)
 
   puts "Created data type"
 
-  runScript("ApplyDataType.rb", [NAME, "07c0:0003"].to_java(:string))
+  $current_api.state.addEnvironmentVar("APPLY_DT_NAME", NAME)
+  $current_api.state.addEnvironmentVar("APPLY_DT_ADDR", START_ADDR.toString)
+  $script.runScript("ApplyDataType.rb")
 
   success = true
 ensure

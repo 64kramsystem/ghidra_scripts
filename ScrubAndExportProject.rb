@@ -6,23 +6,20 @@ java_import 'ghidra.app.util.Option'
 java_import 'ghidra.util.task.TaskMonitor'
 java_import 'java.io.File'
 
-program      = currentProgram
-program_name = program.getName
-
 project_dir = currentProgram.getDomainFile.getProjectLocator.getLocation
 
 # Export ASM listing
 
-asm_path = "#{project_dir}#{program_name}.asm"
+asm_path = "#{project_dir}#{currentProgram.getName}.asm"
 
 asm_exporter = AsciiExporter.new
-asm_exporter.get_options { program }
+asm_exporter.get_options { currentProgram }
 asm_exporter.set_options([
-  Option.new('Field Widths', ' Address ',    java.lang.Integer.new(25)),
-  Option.new('Field Widths', ' Operand ',    java.lang.Integer.new(60)),
+  Option.new('Field Widths', ' Address ',     java.lang.Integer.new(25)),
+  Option.new('Field Widths', ' Operand ',     java.lang.Integer.new(60)),
   Option.new('Field Widths', ' End of Line ', java.lang.Integer.new(80)),
 ])
-asm_exporter.export(File.new(asm_path), program, nil, TaskMonitor::DUMMY)
+asm_exporter.export(File.new(asm_path), currentProgram, nil, TaskMonitor::DUMMY)
 
 processed_asm = IO
   .read(asm_path)
@@ -34,9 +31,9 @@ puts "Listing exported to: #{asm_path}"
 
 # Export XML and scrub it
 
-xml_path = "#{project_dir}#{program_name}.xml"
+xml_path = "#{project_dir}#{currentProgram.getName}.xml"
 
-XmlExporter.new.export(File.new(xml_path), program, nil, TaskMonitor::DUMMY)
+XmlExporter.new.export(File.new(xml_path), currentProgram, nil, TaskMonitor::DUMMY)
 
 # Watch out the `\S` - `.` would eat the closing tag.
 processed_xml = IO

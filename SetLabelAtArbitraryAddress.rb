@@ -1,4 +1,4 @@
-#@category Malware/DOS
+#@category 0Saverio/DosMalware
 
 java_import 'ghidra.program.model.symbol.SourceType'
 

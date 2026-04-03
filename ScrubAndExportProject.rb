@@ -1,4 +1,4 @@
-#@category Malware/DOS
+#@category 0Saverio/DosMalware
 
 java_import 'ghidra.app.util.exporter.AsciiExporter'
 java_import 'ghidra.app.util.exporter.XmlExporter'

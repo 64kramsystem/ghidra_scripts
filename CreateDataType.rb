@@ -1,4 +1,4 @@
-#@category Malware/DOS
+#@category 0Saverio/DosMalware
 
 java_import 'ghidra.program.model.data.StructureDataType'
 java_import 'ghidra.program.model.data.ByteDataType'

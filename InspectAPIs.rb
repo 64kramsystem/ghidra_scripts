@@ -1,4 +1,4 @@
-#@category Malware/DOS
+#@category 0Saverio/DosMalware
 
 # Prints the Ruby APIs available in a RubyDragon Ghidra script, for reference.
 # Run headlessly and feed the output to an LLM before writing scripts.

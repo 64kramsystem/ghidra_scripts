@@ -1,4 +1,4 @@
-#@category Malware/DOS
+#@category 0Saverio/DosMalware
 
 # Useful when Ghidra doesn't know the actual value of a segment register and creates references in
 # the wrong segment.
